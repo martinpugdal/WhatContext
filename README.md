@@ -2,6 +2,16 @@
 
 A Discord bot that turns channel activity into project memory. It captures messages from watched channels, extracts decisions, tasks, and open questions, and helps teams catch up or ask questions against stored context.
 
+## Screenshots
+
+| Catchup summary | Context Q&A |
+|---|---|
+| ![Catchup summary](docs/screenshots/01-catchup-summary.png) | ![Context Q&A](docs/screenshots/02-context-qa.png) |
+
+| Decisions & tasks | Server setup & config |
+|---|---|
+| ![Decisions and tasks](docs/screenshots/03-decisions-tasks.png) | ![Server setup and config](docs/screenshots/04-server-setup-config.png) |
+
 ## Features
 
 - **Per-channel watch list**: choose which channels are analyzed with `/watch`.
