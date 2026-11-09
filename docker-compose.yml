@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: contextbot-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: contextbot
+      POSTGRES_PASSWORD: contextbot
+      POSTGRES_DB: contextbot
+    ports:
+      - "5433:5432"
+    volumes:
+      - contextbot-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U contextbot -d contextbot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  contextbot-pgdata:

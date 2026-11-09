@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Message {
+  id               String   @id @default(cuid())
+  discordMessageId String   @unique
+  guildId          String
+  channelId        String
+  authorId         String
+  authorUsername   String
+  content          String
+  createdAt        DateTime
+
+  importance       Importance?
+  analyzedAt       DateTime?
+
+  decisions        Decision[]
+  tasks            Task[]
+  openQuestions    OpenQuestion[]
+
+  @@index([guildId, channelId, createdAt])
+  @@index([channelId, createdAt])
+}
+
+model Decision {
+  id              String   @id @default(cuid())
+  guildId         String
+  channelId       String
+  text            String
+  sourceMessageId String?
+  source          Message? @relation(fields: [sourceMessageId], references: [id], onDelete: SetNull)
+  createdAt       DateTime @default(now())
+  supersededAt    DateTime?
+  supersededById  String?
+
+  @@index([guildId, channelId, createdAt])
+  @@index([channelId, supersededAt])
+}
+
+model Task {
+  id          String     @id @default(cuid())
+  guildId     String
+  channelId   String
+  title       String
+  assignee    String?
+  dueDate     DateTime?
+  status      TaskStatus @default(OPEN)
+  sourceMessageId String?
+  source      Message?   @relation(fields: [sourceMessageId], references: [id], onDelete: SetNull)
+  createdAt   DateTime   @default(now())
+
+  @@index([guildId, channelId, createdAt])
+  @@index([status])
+}
+
+model OpenQuestion {
+  id              String   @id @default(cuid())
+  guildId         String
+  channelId       String
+  text            String
+  resolved        Boolean  @default(false)
+  resolvedAt      DateTime?
+  resolvedById    String?
+  sourceMessageId String?
+  source          Message? @relation(fields: [sourceMessageId], references: [id], onDelete: SetNull)
+  createdAt       DateTime @default(now())
+
+  @@index([guildId, channelId, createdAt])
+  @@index([channelId, resolved])
+}
+
+model WatchedChannel {
+  channelId String   @id
+  guildId   String
+  addedById String
+  createdAt DateTime @default(now())
+
+  @@index([guildId])
+}
+
+model GuildConfig {
+  guildId        String   @id
+  encryptedKey   String?
+  baseUrl        String?
+  model          String?
+  /// Optional language override for AI output. null = "match input language- (the default).
+  outputLanguage String?
+  updatedById    String?
+  updatedAt      DateTime @updatedAt
+  createdAt      DateTime @default(now())
+}
+
+model Summary {
+  id            String      @id @default(cuid())
+  guildId       String
+  channelId     String
+  kind          SummaryKind @default(CATCHUP)
+  windowStart   DateTime
+  windowEnd     DateTime
+  text          String
+  messageCount  Int         @default(0)
+  lastMessageId String?
+  createdAt     DateTime    @default(now())
+
+  @@unique([channelId, kind, windowStart, windowEnd])
+  @@index([guildId, channelId, kind, createdAt])
+  @@index([channelId, kind, windowEnd])
+}
+
+enum SummaryKind {
+  CHUNK
+  CATCHUP
+}
+
+enum Importance {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum TaskStatus {
+  OPEN
+  IN_PROGRESS
+  DONE
+  CANCELLED
+}
